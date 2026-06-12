@@ -1,0 +1,12 @@
+.lake/
+build/
+tools/
+.venv/
+parity/vh/
+parity/volk.*
+parity/parity_runner
+r128test/r128.h
+r128test/r128_oracle
+r128gpu/r128.h
+r128gpu/*.spv
+r128gpu/r128_gpu_parity

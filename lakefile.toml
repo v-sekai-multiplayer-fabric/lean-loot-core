@@ -1,0 +1,34 @@
+name = "loot_core"
+defaultTargets = ["LootCore"]
+
+[[require]]
+name = "Plausible"
+git = "https://github.com/leanprover-community/plausible"
+rev = "v4.30.0"
+
+[[require]]
+name = "LeanSlang"
+path = "/tmp/vsk_eval/lean-slang"
+
+[[lean_lib]]
+name = "LootCore"
+
+[[lean_exe]]
+name = "loot_demo"
+root = "Main"
+
+[[lean_exe]]
+name = "loot_emit"
+root = "Emit"
+
+[[lean_exe]]
+name = "r128_diff"
+root = "R128Diff"
+
+[[lean_exe]]
+name = "r128l_test"
+root = "R128LTest"
+
+[[lean_exe]]
+name = "r128_slang_emit"
+root = "R128SlangEmit"
