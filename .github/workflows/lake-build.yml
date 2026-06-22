@@ -1,0 +1,54 @@
+name: lake build
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: lake-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Setup-only pass: install the toolchain and resolve+clone the full
+      # dependency graph by building a PURE-LEAN target (`LootCore`, the default
+      # lib). Lake clones every manifest package during resolution, so this
+      # materializes .lake/packages/LeanSlang WITHOUT triggering its native FFI
+      # (the slangShimO/extern_lib only builds when an executable is linked).
+      #
+      # This step must run BEFORE the Slang SDK is vendored: LeanSlang must be
+      # checked out before we can fetch the SDK into its vendor/ directory.
+      #
+      # use-mathlib-cache: false — this project depends only on LeanSlang +
+      # Plausible; there is no Mathlib in the graph to cache.
+      - name: setup toolchain + clone deps (pure-Lean LootCore)
+        uses: leanprover/lean-action@v1
+        with:
+          build-args: "LootCore"
+          test: false
+          lint: false
+          use-mathlib-cache: false
+
+      # LeanSlang's main carries an in-process libslang FFI: ffi/slang_shim.cpp
+      # `#include "slang.h"`, built into an extern_lib that Lake force-links into
+      # any downstream executable (here, r128_slang_emit and the other exes). The
+      # Slang SDK is gitignored in LeanSlang (see vendor/fetch.sh); fetch it
+      # before building the executables below.
+      - name: vendor the Slang SDK for LeanSlang's libslang FFI
+        run: bash .lake/packages/LeanSlang/vendor/fetch.sh
+
+      # Executable gate: build every exe. r128_slang_emit links LeanSlang's
+      # libslang FFI, so this is what exercises the vendored SDK above; the rest
+      # are pure-Lean. (LootCore, the default lib, was already built in setup.)
+      - name: lake build executables
+        run: lake build loot_demo loot_emit r128_diff r128l_test r128_slang_emit
