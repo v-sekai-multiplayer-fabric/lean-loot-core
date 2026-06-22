@@ -8,7 +8,8 @@ rev = "v4.30.0"
 
 [[require]]
 name = "LeanSlang"
-path = "/tmp/vsk_eval/lean-slang"
+git = "https://github.com/V-Sekai-fire/lean-slang"
+rev = "main"
 
 [[lean_lib]]
 name = "LootCore"
